@@ -1,0 +1,7 @@
+package com.vitor.support_chatbot_system.exception;
+
+public class TicketNotFoundException extends RuntimeException{
+    public TicketNotFoundException(String message) {
+        super(message);
+    }
+}

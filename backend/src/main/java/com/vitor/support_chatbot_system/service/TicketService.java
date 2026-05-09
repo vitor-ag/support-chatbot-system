@@ -9,6 +9,7 @@ import com.vitor.support_chatbot_system.dto.CreateTicketRequest;
 import com.vitor.support_chatbot_system.dto.TicketResponse;
 import com.vitor.support_chatbot_system.entity.Ticket;
 import com.vitor.support_chatbot_system.enums.TicketStatus;
+import com.vitor.support_chatbot_system.exception.TicketNotFoundException;
 import com.vitor.support_chatbot_system.repository.TicketRepository;
 
 import lombok.AllArgsConstructor;
@@ -29,14 +30,27 @@ public class TicketService {
         ticket.setProtocol(UUID.randomUUID().toString());
 
         Ticket savedTicket = ticketRepository.save(ticket);
+
+        return mapToResponse(savedTicket);
+    }
+
+    public TicketResponse getTicketByProtocol(String protocol) {
+        
+        Ticket ticket = ticketRepository.findByProtocol(protocol)
+            .orElseThrow(() -> new TicketNotFoundException("Ticket not found: " + protocol));
+
+        return mapToResponse(ticket);
+    }
+
+    public TicketResponse mapToResponse(Ticket ticket) {
         return new TicketResponse(
-            savedTicket.getId(), 
-            savedTicket.getProtocol(), 
-            savedTicket.getSector(),
-            savedTicket.getTitle(),
-            savedTicket.getDescription(),
-            savedTicket.getStatus(),
-            savedTicket.getCreatedAt()
+            ticket.getId(), 
+            ticket.getProtocol(), 
+            ticket.getSector(),
+            ticket.getTitle(),
+            ticket.getDescription(),
+            ticket.getStatus(),
+            ticket.getCreatedAt()
         );
     }
 }
