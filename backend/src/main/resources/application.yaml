@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: support-chatbot-system
+
+  profiles:
+    active: dev
