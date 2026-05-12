@@ -6,26 +6,29 @@ import com.vitor.support_chatbot_system.chat.ChatSession;
 import com.vitor.support_chatbot_system.dto.CreateTicketRequest;
 import com.vitor.support_chatbot_system.dto.TicketResponse;
 import com.vitor.support_chatbot_system.enums.ChatState;
-
-import lombok.*;
+import com.vitor.support_chatbot_system.exception.TicketNotFoundException;
 
 @Service
-@AllArgsConstructor
 public class ChatService {
-    private ChatSession session = new ChatSession();
+    private ChatSession session;
 
     private final TicketService ticketService;
+
+    public ChatService(TicketService ticketService) {
+        this.ticketService = ticketService;
+        this.session = new ChatSession();
+    }
 
     public String processMessage(String message) {
         switch (session.getState()) {
             case START:
                 session.setState(ChatState.MENU);
                 return """
-                    Bem-vindo ao suporte!
-                    
-                    1 - Criar chamado
-                    2 - Consultar status
-                    """;
+                        Bem-vindo ao suporte!
+
+                        1 - Criar chamado
+                        2 - Consultar status
+                        """;
 
             case MENU:
                 if (message.equals("1")) {
@@ -61,18 +64,17 @@ public class ChatService {
                         1 - Confirmar
                         2 - Cancelar
                         """.formatted(
-                            session.getSector(), 
-                            session.getTitle(), 
-                            session.getDescription()
-                        );
+                        session.getSector(),
+                        session.getTitle(),
+                        session.getDescription());
 
             case CONFIRMATION:
                 if (message.equals("1")) {
                     CreateTicketRequest request = new CreateTicketRequest(
-                        session.getSector(), 
-                        session.getTitle(), 
-                        session.getDescription());
-                    
+                            session.getSector(),
+                            session.getTitle(),
+                            session.getDescription());
+
                     TicketResponse response = ticketService.createTicket(request);
                     session = new ChatSession();
 
@@ -82,9 +84,8 @@ public class ChatService {
                             Protocolo: %s
                             Status: %s
                             """.formatted(
-                                response.getProtocol(),
-                                response.getStatus()
-                            );
+                            response.getProtocol(),
+                            response.getStatus());
                 } else if (message.equals("2")) {
                     session = new ChatSession();
 
@@ -93,7 +94,28 @@ public class ChatService {
                     return "Opção inválida";
                 }
             case WAITING_PROTOCOL:
-                return "Fluxo ainda não implementado.";
+                try {
+                    TicketResponse response = ticketService.getTicketByProtocol(message);
+                    session = new ChatSession();
+
+                    return """
+                            Chamado encontrado!
+
+                            Protocolo: %s
+                            Status: %s
+                            Título: %s
+                            Setor: %s
+                            """.formatted(
+                            response.getProtocol(),
+                            response.getStatus(),
+                            response.getTitle(),
+                            response.getSector());
+                } catch (TicketNotFoundException e) {
+                    session = new ChatSession();
+
+                    return e.getMessage();
+                }
+
             case FINISHED:
                 return "Fluxo ainda não implementado.";
             default:
