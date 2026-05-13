@@ -1,6 +1,7 @@
 package com.vitor.support_chatbot_system.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/chat")
+@CrossOrigin(origins = "http://localhost:5173")
 @AllArgsConstructor
 public class ChatController {
     private final ChatService chatService;
